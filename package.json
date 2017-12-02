@@ -70,7 +70,7 @@
     "node": ">=6.9.0"
   },
   "scripts": {
-    "test": "gulp test",
+    "test": "",
     "postinstall": "webdriver-manager update"
   }
 }

@@ -54,7 +54,13 @@
         }
 
         vm.analyzeRecord = function () {
-            var pippo = new FormData();
+            /*const x = vm.getService();
+            debugger;
+            var props = x.$html5AudioProps;
+            var freqByteData = new Uint8Array(props.analyserNode.frequencyBinCount);
+            props.analyserNode.getByteFrequencyData(freqByteData);
+            debugger;
+            */var pippo = new FormData();
             pippo.append('file', vm.getService().audioModel);
             console.log(pippo);
             $http.post('https://tgi.eu-de.mybluemix.net/send_voice', pippo, {
