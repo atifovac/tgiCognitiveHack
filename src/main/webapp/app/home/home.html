@@ -1,41 +1,76 @@
 <div ng-cloak>
-    <div class="row">
-        <div class="col-md-4">
-            <span class="hipster img-responsive img-rounded"></span>
+    <ng-audio-recorder id='audioInput' audio-model='recordedInput'>
+        <!-- Start controls, exposed via recorder-->
+        <div ng-if="recorder.isAvailable">
+            <!--button ng-click="recorder.startRecord()" type="button" ng-disabled="recorder.status.isRecording">
+                Start Record
+            </button>
+            <button ng-click="recorder.stopRecord()" type="button" ng-disabled="recorder.status.isRecording === false">
+                Stop Record
+            </button>
+            <button ng-click="recorder.playbackRecording()" type="button"
+                    ng-disabled="recorder.status.isRecording || !recorder.audioModel">
+                Play Back
+            </button-->
         </div>
-        <div class="col-md-8">
-            <h1>Welcome, Java Hipster!</h1>
-            <p class="lead">This is your homepage</p>
 
-            <div ng-switch="vm.isAuthenticated()">
-                <div class="alert alert-success" ng-switch-when="true">
-                    You are logged in as user "{{vm.account.login}}".
-                </div>
+        <div ng-if="!recorder.isAvailable">
+            Recording is not possible.
+        </div>
+        <!-- End controls-->
+    </ng-audio-recorder>
 
-                <div class="alert alert-warning" ng-switch-when="false">
-                    If you want to <a class="alert-link" href="" ng-click="vm.login()">sign in</a>, you can try the default accounts:<br/>- Administrator (login="admin" and password="admin") <br/>- User (login="user" and password="user").
-                </div>
+    <div ng-if="vm.docNeeded">
+        <div ng-if="vm.takeSnapshot">
+            <webcam
+                channel="vm.myChannel"
+                on-stream="vm.onStream(stream)"
+                on-streaming="vm.onSuccess()"
+                on-error="vm.onError(err)"
+                ng-click="vm.makeSnapshot()">
+            </webcam>
+        </div>
+        <div ng-show="!vm.takeSnapshot">
+            <canvas id="snapshot"></canvas>
+            <br>
+            <button class="btn btn-primary btn-lg" ng-click="vm.saveSnapshot()"><i class="glyphicon glyphicon-thumbs-up "></i></button>
+            <button class="btn btn-warning btn-lg" ng-click="vm.redoSnapshot()"><i class="glyphicon glyphicon-refresh "></i></button>
+        </div>
+    </div>
 
-                <div class="alert alert-warning" ng-switch-when="false">
-                    You don't have an account yet? <a class="alert-link" ui-sref="register">Register a new account</a>
+    <div class="row">
+        <div class="text-center">
+            <button ng-class="vm.getService().status.isRecording ? 'btn btn-lg btn-danger' : 'btn btn-lg btn-primary'"
+                    ng-click="vm.doAction()">
+                {{vm.getService().status.isRecording ? 'stop' : 'start'}}
+            </button>
+        </div>
+        <!--button ng-click=""><i class="glyphicon glyphicon-record"></i></button-->
+        <!--button ng-click="vm.analyzeRecord()">Analyze</button -->
+    </div>
+    <div class="row">
+        <form class="form">
+            <div class="form-group">
+                <label for="nameAndSurname">Nome</label>
+                <input ng-model="vm.data.name" type="text" class="form-control" id="nameAndSurname">
+            </div>
+            <div class="form-group">
+                <label for="address">Indirizzo:</label>
+                <input ng-model="vm.data.location" type="text" class="form-control" id="address">
+            </div>
+            <div class="form-group">
+                <label>Documento:&nbsp;</label>
+                <a ng-href="{{vm.data.documentUrl}}" target="_blank" class="btn btn-primary"
+                   ng-disabled="!vm.data.documentUrl">Scarica {{vm.data.document || 'Documento'}}</a>
+            </div>
+            <div class="form-group">
+                <label for="mortgage">Importo rata:</label>
+                <div class="input-group">
+                    <span class="input-group-addon">€</span>
+                    <input ng-model="vm.data.mortgage" type="text" class="form-control" id="mortgage">
+                    <span class="input-group-addon">,00</span>
                 </div>
             </div>
-
-            <p>
-                If you have any question on JHipster:
-            </p>
-
-            <ul>
-                <li><a href="http://www.jhipster.tech/" target="_blank" rel="noopener">JHipster homepage</a></li>
-                <li><a href="http://stackoverflow.com/tags/jhipster/info" target="_blank" rel="noopener">JHipster on Stack Overflow</a></li>
-                <li><a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank" rel="noopener">JHipster bug tracker</a></li>
-                <li><a href="https://gitter.im/jhipster/generator-jhipster" target="_blank" rel="noopener">JHipster public chat room</a></li>
-                <li><a href="https://twitter.com/java_hipster" target="_blank" rel="noopener">follow @java_hipster on Twitter</a></li>
-            </ul>
-
-            <p>
-             <span>If you like JHipster, don't forget to give us a star on </span>&nbsp;<a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener">GitHub</a>!
-            </p>
-        </div>
+        </form>
     </div>
 </div>
