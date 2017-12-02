@@ -1,6 +1,5 @@
 package io.github.jhipster.application;
 
-import io.github.jhipster.application.config.DefaultProfileUtil;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 
@@ -15,7 +14,6 @@ public class ApplicationWebXml extends SpringBootServletInitializer {
         /**
          * set a default to use when no profile is configured.
          */
-        DefaultProfileUtil.addDefaultProfile(application.application());
         return application.sources(TgiCognitiveHackApp.class);
     }
 }

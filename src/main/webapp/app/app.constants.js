@@ -5,6 +5,6 @@
         .module('tgiCognitiveHackApp')
         .constant('VERSION', "0.0.1-SNAPSHOT")
         .constant('DEBUG_INFO_ENABLED', false)
-        .constant('BUILD_TIMESTAMP', 1512250737347)
+        .constant('BUILD_TIMESTAMP', 1512253875758)
 ;
 })();
