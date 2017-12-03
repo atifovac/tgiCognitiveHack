@@ -109,6 +109,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ibm.watson.developer_cloud</groupId>
+            <artifactId>java-sdk</artifactId>
+            <version>4.0.0</version>
+        </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>
 
