@@ -21,6 +21,12 @@
         vm.isAuthenticated = null;
         vm.login = LoginService.open;
         vm.text = "";
+        vm.recStatusConst = {
+            stopped: 'STOP',
+            started: 'START',
+            awaiting: 'WAIT'
+        };
+        vm.recStatus = vm.recStatusConst.stopped;
         vm.register = register;
         $scope.$on('authenticationSuccess', function () {
             getAccount();
@@ -60,7 +66,8 @@
             var freqByteData = new Uint8Array(props.analyserNode.frequencyBinCount);
             props.analyserNode.getByteFrequencyData(freqByteData);
             debugger;
-            */var pippo = new FormData();
+            */
+            var pippo = new FormData();
             pippo.append('file', vm.getService().audioModel);
             console.log(pippo);
             $http.post('https://tgi.eu-de.mybluemix.net/send_voice', pippo, {
@@ -89,6 +96,60 @@
             });
         };
 
+        vm.analyzeText = function (texts) {
+            if (!texts || texts.length === 0) {
+                return;
+            }
+            /*const x = vm.getService();
+            debugger;
+            var props = x.$html5AudioProps;
+            var freqByteData = new Uint8Array(props.analyserNode.frequencyBinCount);
+            props.analyserNode.getByteFrequencyData(freqByteData);
+            debugger;
+            */
+            var pippo = new FormData();
+            console.log("BEFORE", texts);
+            var nextMessage = texts.shift();
+
+            console.log("NEXT", nextMessage);
+            console.log("OTHER", texts);
+
+            pippo.append('text', nextMessage);
+            $http.post('https://tgi.eu-de.mybluemix.net/test_text', pippo, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined}
+            }).then(function (resp) {
+                vm.text = resp.data.payload;
+                vm.features = resp.data.features;
+                var ok = false;
+                if (resp.data.person) {
+                    vm.data.name = resp.data.person;
+                    ok = true;
+                }
+                if (resp.data.location) {
+                    vm.data.location = resp.data.location;
+                    ok = true;
+                }
+                if (resp.data.document) {
+                    vm.data.document = resp.data.document;
+                    vm.takeSnapshot = true;
+                    vm.docNeeded = true;
+                    ok = true;
+                }
+                if (resp.data.mortgage) {
+                    vm.data.mortgage = resp.data.mortgage;
+                    ok = true;
+                }
+                if (!ok) {
+                    vm.analyzeText(texts);
+                }
+            }, function (error) {
+                console.log(error);
+                vm.analyzeText(texts);
+                return error;
+            });
+        };
+
         vm.doAction = function () {
             let service = vm.getService();
             if (!service.status.isRecording) {
@@ -109,13 +170,14 @@
 
         vm.onSuccess = function () {
             var _video = vm.myChannel.video;
-            $scope.$apply(function() {
+            $scope.$apply(function () {
                 vm.patOpts.w = _video.width;
                 vm.patOpts.h = _video.height;
             });
         };
 
-        vm.onError = function (err) {};
+        vm.onError = function (err) {
+        };
 
         var getVideoData = function getVideoData(x, y, w, h) {
             var _video = vm.myChannel.video;
@@ -148,13 +210,73 @@
         vm.saveSnapshot = function () {
             vm.data.documentUrl = document.querySelector('#snapshot').toDataURL();
             vm.docNeeded = false;
-            vm.takeSnapshot = false;ù
+            vm.takeSnapshot = false;
             //window.open(vm.data.documentUrl, '_blank');
         };
 
         vm.redoSnapshot = function () {
             vm.takeSnapshot = true;
         };
+
+        vm.streamVoice = function () {
+
+            if (vm.recStatus === vm.recStatusConst.started) {
+                vm.stream.stop();
+                vm.recStatus = vm.recStatusConst.stopped;
+                return;
+            }
+            vm.recStatus = vm.recStatusConst.awaiting;
+            $http.get('/api/token')
+                .then(function (response) {
+                    return response.data.token;
+                }).then(function (token) {
+
+                vm.stream = WatsonSpeech.SpeechToText.recognizeMicrophone({
+                    token: token,
+                    objectMode: true,
+                    max_alternatives: 4,
+                    language: 'en_UK',
+                    model: 'en-UK_BroadbandModel'
+                });
+
+                vm.recStatus = vm.recStatusConst.started;
+
+                vm.stream.on('error', function (err) {
+                    console.log(err);
+                });
+
+                vm.stream.on('data', function (message) {
+
+                    if (!message.results) {
+                        // won't happen in this example, but would if speaker_labels is enabled
+                        return;
+                    }
+
+                    // build up a HTML dropdown menu with the alternatives
+                    var dropdown = message.results.map(function (result) {
+                        var options = result.alternatives.map(function (alt) {
+                            console.log('alt.transcript = ', alt.transcript);
+                            return alt.transcript;
+                        });
+                        return options;
+                    });
+
+                    //$curSentence.html(dropdown);
+
+                    if (message.results[0].final) {
+                        // if we have the final text for that sentence, start a new one
+                        vm.analyzeText(dropdown[0]);
+                        //$curSentence = $('<span/>').appendTo($output);
+                    }
+                });
+
+                //document.querySelector('#stop').onclick = stream.stop.bind(stream);
+
+            }).catch(function (error) {
+                vm.recStatus = vm.recStatusConst.stopped;
+                console.log(error);
+            });
+        }
 
 
     }
